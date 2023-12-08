@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:park_guide_istanbul/pages/login.dart';
+import 'package:park_guide_istanbul/pages/mainPage.dart';
 import 'package:park_guide_istanbul/utils/ui_features.dart';
 
 void main() {
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: CustomColors.darkPurple() as MaterialColor,
+        primarySwatch: Colors.purple,
       ),
       home: LoginPage(),
     );
