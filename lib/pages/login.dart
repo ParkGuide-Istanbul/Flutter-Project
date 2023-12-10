@@ -7,6 +7,8 @@ import 'package:park_guide_istanbul/utils/customWidgets.dart';
 import 'package:park_guide_istanbul/pages/signUp.dart';
 import 'package:park_guide_istanbul/utils/ui_features.dart';
 import 'forgotPassword.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -53,25 +55,23 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void _submit() {
-    // Here, you can add your authentication logic.
-    // For a basic example, we'll just print the email and password.
     String username = _usernameController.text;
     String password = _passwordController.text;
 
     Map<String, dynamic> userCredentials = {
-      'username': username,
-      'password': password,
+      "username": username,
+      "password": password,
     };
 
-    httpLogin.postRequest(userCredentials).then((value) {
-      if (value['statusCode'] == 200) {
+    httpLogin.postRequest(userCredentials).then((response) {
+      if (response['statusCode'] == 200) {
         wrongCredentials = false;
-        String userToken = value['body']['token'];
+        String userToken = response['token'];
         Config.setUserToken(userToken);
         //go to home page
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => MainPage()));
-      } else if (value['statusCode'] == 500) {
+      } else if (response['statusCode'] == 500) {
         print('Server is off.');
       } else {
         wrongCredentials = true;

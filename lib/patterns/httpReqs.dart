@@ -9,7 +9,7 @@ class HttpRequests {
 
   Future<Map<String, dynamic>> getRequest() async {
     try {
-      final response = await http.get(Uri.parse('$_URL'));
+      final response = await http.get(Uri.parse(_URL));
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -22,19 +22,16 @@ class HttpRequests {
   }
 
   Future<Map<String, dynamic>> postRequest(Map<String, dynamic> data) async {
+    print("post req triggered.");
     try {
+      print(data);
       final response = await http.post(
-        Uri.parse('$_URL'),
-        body: json.encode(data), // Veriyi JSON formatına çevirir
+        Uri.parse(_URL),
+        body: json.encode(data),
         headers: {'Content-Type': 'application/json'},
       );
 
-      Map<String, dynamic> res = {
-        'statusCode': response.statusCode,
-        'body': response.body
-      };
-
-      return res;
+      return json.decode(response.body);
     } catch (e) {
       throw Exception('Error: $e');
     }
