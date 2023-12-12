@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:park_guide_istanbul/pages/login.dart';
+import 'package:park_guide_istanbul/patterns/Singleton.dart';
 import 'package:park_guide_istanbul/patterns/httpReqs.dart';
 import 'package:park_guide_istanbul/utils/customWidgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -13,9 +15,9 @@ class SignUpPage extends StatelessWidget {
     return Scaffold(
       appBar: preLoginAppBar(
           label: 'Sign Up To ParkGuide Istanbul', context: context),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
           child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32.0),
+        padding: EdgeInsets.symmetric(vertical: 32.0),
         child: SignUpForm(),
       )),
     );
@@ -23,14 +25,14 @@ class SignUpPage extends StatelessWidget {
 }
 
 class SignUpForm extends StatefulWidget {
-  SignUpForm({Key? key}) : super(key: key);
+  const SignUpForm({Key? key}) : super(key: key);
 
   @override
   State<SignUpForm> createState() => _SignUpFormState();
 }
 
 class _SignUpFormState extends State<SignUpForm> {
-  final HttpRequests httpReq = new HttpRequests(Config.getSignUpURL());
+  final HttpRequests httpReq = HttpRequests(Config.getSignUpURL());
   final _signupKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -39,11 +41,12 @@ class _SignUpFormState extends State<SignUpForm> {
   final TextEditingController _usernameController = TextEditingController();
 
   String? emailValidator(email) {
-    RegExp _regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (_regex.hasMatch(email))
+    RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (regex.hasMatch(email)) {
       return null;
-    else
+    } else {
       return "Please enter a valid email.";
+    }
   }
 
   void signup() {
@@ -59,8 +62,13 @@ class _SignUpFormState extends State<SignUpForm> {
       };
       httpReq.postRequest(signupInfo).then((response) {
         if (response['statusCode'] == 200) {
-          //KOD ALMA İŞLEMLERİNE GEÇİLMELİ
-
+          //DOGRULAMA KODU ALMA İŞLEMLERİNE GEÇİLMELİ
+          UsernameSingleton usernameSingleton = UsernameSingleton.getInstance();
+          usernameSingleton.setUsername(username: username);
+          PasswordSingleton passwordSingleton = PasswordSingleton.getInstance();
+          passwordSingleton.setPassword(password: password);
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => SignupCodePage()));
         } else if (response['statusCode'] == 400) {
           Fluttertoast.showToast(
               msg: response['message'],
@@ -78,7 +86,7 @@ class _SignUpFormState extends State<SignUpForm> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: SingleChildScrollView(
         child: Form(
           key: _signupKey,
@@ -140,5 +148,117 @@ class _SignUpFormState extends State<SignUpForm> {
         ),
       ),
     );
+  }
+}
+
+class SignupCodePage extends StatelessWidget {
+  const SignupCodePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar:
+          preLoginAppBar(label: 'Enter Verification Code', context: context),
+      body: SignUpCodeStage(),
+    );
+  }
+}
+
+class SignUpCodeStage extends StatefulWidget {
+  SignUpCodeStage({Key? key}) : super(key: key);
+
+  @override
+  State<SignUpCodeStage> createState() => _SignUpCodeStageState();
+}
+
+class _SignUpCodeStageState extends State<SignUpCodeStage> {
+  /*
+    Here, there should be validation code coming from backend and the validation check should be here. 
+  */
+
+  HttpRequests httpReq = HttpRequests(Config.getVerifyURL());
+
+  String? codeValidator(code) {
+    return null;
+  }
+
+  UsernameSingleton? usernameSingleton;
+  String username = '';
+  PasswordSingleton? passwordSingleton;
+  String password = '';
+
+  _SignUpCodeStageState() {
+    usernameSingleton = UsernameSingleton.getInstance();
+    username = usernameSingleton!.getUsername();
+    passwordSingleton = PasswordSingleton.getInstance();
+    password = passwordSingleton!.getPassword();
+  }
+  final _codeValidationKey = GlobalKey<FormState>();
+  final TextEditingController _codeController = TextEditingController();
+
+  void _submit() {
+    if (_codeValidationKey.currentState!.validate()) {
+      String validationCode = _codeController.text;
+      Map<String, dynamic> vCode = {
+        "username": username,
+        "password": password,
+        "code": validationCode
+      };
+      httpReq.postRequest(vCode).then((res) {
+        if (res['statusCode'] == 200) {
+          Fluttertoast.showToast(
+              msg: "SignUp Successful",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: CustomColors.darkPurple(),
+              textColor: Colors.white,
+              fontSize: 16.0);
+
+          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => LoginPage()));
+        } else {
+          Fluttertoast.showToast(
+              msg: res['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: CustomColors.darkPurple(),
+              textColor: Colors.white,
+              fontSize: 16.0);
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      reverse: true,
+      child: Form(
+        key: _codeValidationKey,
+        child: Column(
+          children: [
+            SizedBox(height: 150),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
+              child: TextFormField(
+                validator: codeValidator,
+                controller: _codeController,
+                decoration: const InputDecoration(
+                    labelText: "Verification Code",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)))),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            customButton(label: 'Submit', onPressed: _submit),
+            Padding(padding: EdgeInsets.all(10))
+          ],
+        ),
+      ),
+    );
+    ;
   }
 }
