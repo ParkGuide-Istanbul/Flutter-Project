@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:park_guide_istanbul/patterns/Singleton.dart';
+import 'package:park_guide_istanbul/patterns/config.dart';
+import 'package:park_guide_istanbul/patterns/httpReqs.dart';
 import 'package:park_guide_istanbul/utils/customWidgets.dart';
+
+import '../utils/ui_features.dart';
 
 class ForgotPasswordEmailPage extends StatelessWidget {
   const ForgotPasswordEmailPage({Key? key}) : super(key: key);
@@ -24,6 +29,8 @@ class ForgotPasswordEmailStage extends StatefulWidget {
 }
 
 class _ForgotPasswordEmailStageState extends State<ForgotPasswordEmailStage> {
+  HttpRequests httpReq = HttpRequests(Config.getForgotPasswordURL());
+
   final _validationKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
 
@@ -32,10 +39,26 @@ class _ForgotPasswordEmailStageState extends State<ForgotPasswordEmailStage> {
   void _submit() {
     if (_validationKey.currentState!.validate()) {
       String email = _emailController.text;
-      EmailSingleton singleton = EmailSingleton.getInstance() as EmailSingleton;
-      singleton.setEmail(email: email);
-      Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => ForgotPasswordCodePage()));
+      Map<String, dynamic> body = {"email": email};
+      httpReq.postRequest(body).then((res) {
+        if (res['statusCode'] == 200) {
+          UsernameSingleton usernameSingleton = UsernameSingleton.getInstance();
+          usernameSingleton.setUsername(username: res['username']);
+          EmailSingleton emailSingleton = EmailSingleton.getInstance();
+          emailSingleton.setEmail(email: email);
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => ForgotPasswordCodePage()));
+        } else {
+          Fluttertoast.showToast(
+              msg: res['message'],
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: CustomColors.darkPurple(),
+              textColor: Colors.white,
+              fontSize: 16.0);
+        }
+      });
     }
   }
 
@@ -104,13 +127,16 @@ class _ForgotPasswordCodeStageState extends State<ForgotPasswordCodeStage> {
     return null;
   }
 
-  EmailSingleton? singleton;
+  EmailSingleton? emailSingleton;
   String email = '';
+  UsernameSingleton? usernameSingleton;
+  String username = '';
 
   _ForgotPasswordCodeStageState() {
-    this.singleton = EmailSingleton.getInstance();
-    email = singleton!.getEmail();
-    print(email);
+    emailSingleton = EmailSingleton.getInstance();
+    email = emailSingleton!.getEmail();
+    usernameSingleton = UsernameSingleton.getInstance();
+    username = usernameSingleton!.getUsername();
   }
   final _codeValidationKey = GlobalKey<FormState>();
   TextEditingController _codeController = new TextEditingController();
