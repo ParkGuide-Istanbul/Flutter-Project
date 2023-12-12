@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:park_guide_istanbul/pages/mainPage.dart';
 import 'package:park_guide_istanbul/patterns/config.dart';
 import 'package:park_guide_istanbul/patterns/httpReqs.dart';
@@ -7,8 +6,6 @@ import 'package:park_guide_istanbul/utils/customWidgets.dart';
 import 'package:park_guide_istanbul/pages/signUp.dart';
 import 'package:park_guide_istanbul/utils/ui_features.dart';
 import 'forgotPassword.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -61,13 +58,18 @@ class _LoginFormState extends State<LoginForm> {
     Map<String, dynamic> userCredentials = {
       "username": username,
       "password": password,
+      "requiredRoles": ["StandartUser"]
     };
 
     httpLogin.postRequest(userCredentials).then((response) {
       if (response['statusCode'] == 200) {
         wrongCredentials = false;
-        String userToken = response['token'];
+        String userToken = response['message']['token'];
         Config.setUserToken(userToken);
+        Config.setPassword(password: password);
+        Config.setUsername(username: username);
+        Config.setProfilePicture(
+            profilePictureURL: "assets/useravatarazkucuk.png");
         //go to home page
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => MainPage()));
@@ -76,6 +78,7 @@ class _LoginFormState extends State<LoginForm> {
       } else {
         wrongCredentials = true;
         _loginKey.currentState!.validate();
+        wrongCredentials = false;
       }
     });
 
