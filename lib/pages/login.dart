@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:park_guide_istanbul/pages/mainPage.dart';
 import 'package:park_guide_istanbul/patterns/config.dart';
@@ -6,6 +7,9 @@ import 'package:park_guide_istanbul/utils/customWidgets.dart';
 import 'package:park_guide_istanbul/pages/signUp.dart';
 import 'package:park_guide_istanbul/utils/ui_features.dart';
 import 'forgotPassword.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+
+final scaffoldKey = GlobalKey<ScaffoldState>();
 
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
@@ -15,6 +19,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       appBar: preLoginAppBar(label: 'Login To Your Account', context: context),
       body: SingleChildScrollView(
           child: Padding(
@@ -43,12 +48,12 @@ class _LoginFormState extends State<LoginForm> {
   void goToSignUpPage() {
     print('This is Sign Up function');
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => SignUpPage()));
+        .push(CupertinoPageRoute(builder: (context) => SignUpPage()));
   }
 
   void passwordRenewingMethod() {
     Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => ForgotPasswordEmailPage()));
+        CupertinoPageRoute(builder: (context) => ForgotPasswordEmailPage()));
   }
 
   void _submit() {
@@ -71,8 +76,8 @@ class _LoginFormState extends State<LoginForm> {
         Config.setProfilePicture(
             profilePictureURL: "assets/useravatarazkucuk.png");
         //go to home page
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => MainPage()));
+        Navigator.of(context).pushReplacement(
+            CupertinoPageRoute(builder: (context) => MainPage()));
       } else if (response['statusCode'] == 500) {
         print('Server is off.');
       } else {
