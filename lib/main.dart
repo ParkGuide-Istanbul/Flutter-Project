@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:park_guide_istanbul/pages/login.dart';
-import 'package:park_guide_istanbul/pages/mainPage.dart';
-import 'package:park_guide_istanbul/utils/ui_features.dart';
+import 'package:park_guide_istanbul/utils/helper.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  NotificationHelper.initialize();
   runApp(const MyApp());
 }
 
