@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:park_guide_istanbul/pages/login.dart';
 import 'package:park_guide_istanbul/patterns/Singleton.dart';
@@ -15,11 +16,21 @@ class SignUpPage extends StatelessWidget {
     return Scaffold(
       appBar: preLoginAppBar(
           label: 'Sign Up To ParkGuide Istanbul', context: context),
-      body: const SingleChildScrollView(
-          child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 32.0),
-        child: SignUpForm(),
-      )),
+      body: Stack(children: [
+        Container(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/ortakoy_mosq.png'),
+                  fit: BoxFit.cover,
+                  opacity: 0.4,
+                  alignment: Alignment.center)),
+        ),
+        const SingleChildScrollView(
+            child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 32.0),
+          child: SignUpForm(),
+        )),
+      ]),
     );
   }
 }
@@ -39,6 +50,8 @@ class _SignUpFormState extends State<SignUpForm> {
   final TextEditingController _passwordRepeatedController =
       TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _surNameController = TextEditingController();
 
   String? emailValidator(email) {
     RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -54,11 +67,15 @@ class _SignUpFormState extends State<SignUpForm> {
       String username = _usernameController.text;
       String email = _emailController.text;
       String password = _passwordController.text;
+      String name = _nameController.text;
+      String surname = _surNameController.text;
 
       Map<String, dynamic> signupInfo = {
         "username": username,
         "password": password,
-        "email": email
+        "email": email,
+        "name": name,
+        "surname": surname
       };
       httpReq.postRequest(signupInfo).then((response) {
         if (response['statusCode'] == 200) {
@@ -94,6 +111,28 @@ class _SignUpFormState extends State<SignUpForm> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
+              TextFormField(
+                validator: (value) => value!.length < 2
+                    ? "Name shouldn't be shorter than 2 characters"
+                    : null,
+                controller: _nameController,
+                decoration: const InputDecoration(
+                    labelText: "Name",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)))),
+              ),
+              const SizedBox(height: 15),
+              TextFormField(
+                validator: (value) => value!.length < 2
+                    ? "Surname shouldn't be shorter than 2 characters"
+                    : null,
+                controller: _surNameController,
+                decoration: const InputDecoration(
+                    labelText: "Surname",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)))),
+              ),
+              const SizedBox(height: 15),
               TextFormField(
                 validator: (value) => value!.length < 2
                     ? "Username should be longer than 2 characters"
@@ -215,9 +254,11 @@ class _SignUpCodeStageState extends State<SignUpCodeStage> {
               textColor: Colors.white,
               fontSize: 16.0);
 
-          Navigator.of(context).pop();
-          Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => LoginPage()));
+          while (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+          /*Navigator.pushReplacement(
+              context, CupertinoPageRoute(builder: (context) => LoginPage()));*/
         } else {
           Fluttertoast.showToast(
               msg: res['message'],
