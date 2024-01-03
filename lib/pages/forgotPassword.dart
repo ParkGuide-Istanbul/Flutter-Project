@@ -15,7 +15,17 @@ class ForgotPasswordEmailPage extends StatelessWidget {
     return Scaffold(
       appBar:
           preLoginAppBar(label: 'Enter Your E-Mail Adress', context: context),
-      body: ForgotPasswordEmailStage(),
+      body: Stack(children: [
+        Container(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/ortakoy_mosq.png'),
+                  fit: BoxFit.cover,
+                  opacity: 0.4,
+                  alignment: Alignment.center)),
+        ),
+        ForgotPasswordEmailStage()
+      ]),
     );
   }
 }
@@ -72,9 +82,9 @@ class _ForgotPasswordEmailStageState extends State<ForgotPasswordEmailStage> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(height: 150),
+            SizedBox(height: 75),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 32),
               child: TextFormField(
                 validator: (email) =>
                     _regex.hasMatch(email!) && email.length != 0
@@ -140,6 +150,8 @@ class _ForgotPasswordCodeStageState extends State<ForgotPasswordCodeStage> {
   }
   final _codeValidationKey = GlobalKey<FormState>();
   TextEditingController _codeController = new TextEditingController();
+  TextEditingController _passwordController = new TextEditingController();
+  TextEditingController _passwordRepeatController = new TextEditingController();
 
   void _submit() {
     if (_codeValidationKey.currentState!.validate()) {
@@ -156,9 +168,9 @@ class _ForgotPasswordCodeStageState extends State<ForgotPasswordCodeStage> {
         key: _codeValidationKey,
         child: Column(
           children: [
-            SizedBox(height: 150),
+            SizedBox(height: 50),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 32),
               child: TextFormField(
                 validator: codeValidator,
                 controller: _codeController,
@@ -169,6 +181,35 @@ class _ForgotPasswordCodeStageState extends State<ForgotPasswordCodeStage> {
                 keyboardType: TextInputType.number,
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 32),
+              child: TextFormField(
+                validator: ((value) => value!.length >= 8
+                    ? null
+                    : "Password should have at least 8 characters."),
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                    labelText: "New Password",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)))),
+                obscureText: true,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 32),
+              child: TextFormField(
+                validator: (value) => value == _passwordController.text
+                    ? null
+                    : "Passwords do not match.",
+                controller: _passwordRepeatController,
+                decoration: const InputDecoration(
+                    labelText: "New Password Repeat",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)))),
+                obscureText: true,
+              ),
+            ),
+            const SizedBox(height: 22),
             customButton(label: 'Submit', onPressed: _submit),
             Padding(padding: EdgeInsets.all(10))
           ],
