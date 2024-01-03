@@ -1,14 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:park_guide_istanbul/pages/login.dart';
 import 'package:park_guide_istanbul/pages/mainPage.dart';
 import 'package:park_guide_istanbul/patterns/config.dart';
 import 'package:park_guide_istanbul/utils/ui_features.dart';
 
 import '../pages/profile.dart';
+import '../pages/report.dart';
 
 enum inputType { EMAIL, PASSWORD, NAME, SURNAME, DATE_OF_BIRTH }
 
-enum PAGE { MAIN, PROFILE }
+enum PAGE { MAIN, PROFILE, REPORT }
 
 PreferredSize mainAppBar() => PreferredSize(
       preferredSize: Size.fromHeight(60),
@@ -31,12 +33,12 @@ OutlinedButton customButton(
     onPressed: onPressed,
     child: Text(label),
     style: OutlinedButton.styleFrom(
-      backgroundColor: CustomColors.darkPurple(),
+      backgroundColor: CustomColors.middlePurple(),
       primary: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
       ),
-      elevation: 4,
+      elevation: 0,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       textStyle: const TextStyle(
         fontSize: 16,
@@ -63,16 +65,32 @@ PreferredSize preLoginAppBar(
               CustomColors.darkPurple()
             ], begin: Alignment.bottomCenter, end: Alignment.topCenter),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              label,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 25,
-                  color: Colors.white),
-              textAlign: TextAlign.left,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              const SizedBox(
+                height: 100,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(0),
+                child: Image.asset(
+                  "assets/apple-touch-icon.png",
+                  alignment: Alignment.centerLeft,
+                  width: 75,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(0),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 25,
+                      color: Colors.white),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -82,95 +100,174 @@ PreferredSize preLoginAppBar(
 }
 
 Drawer customDrawer({required context, required PAGE pageName}) => Drawer(
-      backgroundColor: CustomColors.customGrey(),
-      child: ListView(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: CustomColors.middlePurple()),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 16),
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundImage: AssetImage(Config.getProfilePicture()),
+      //backgroundColor: CustomColors.customGrey(),
+      child: Container(
+        decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/ortakoy_mosq.png'),
+                fit: BoxFit.cover,
+                opacity: 0.3,
+                alignment: Alignment.center)),
+        child: ListView(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
+              child: Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: CustomColors.middlePurple()),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 16),
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundImage: AssetImage(Config.getProfilePicture()),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      Config.getUsername(),
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20),
+                    const SizedBox(width: 8),
+                    Container(
+                      alignment: Alignment.center,
+                      child: Text(
+                        Config.getUsername(),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          ListTile(
-            tileColor: Colors.white,
-            onTap: () {
-              if (pageName == PAGE.MAIN) {
-                Navigator.of(context).pop();
-              } else {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushReplacement(
-                    CupertinoPageRoute(builder: (context) => MainPage()));
-              }
-            },
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            title: Text(
-              "Home",
-              style: CustomTextStyles.drawerMenuTextStyle(),
-              textAlign: TextAlign.left,
+            ListTile(
+              tileColor: pageName == PAGE.MAIN
+                  ? CustomColors.middlePurple()
+                  : Colors.white,
+              onTap: () {
+                if (pageName == PAGE.MAIN) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pop();
+
+                  Navigator.of(context).pushReplacement(
+                      CupertinoPageRoute(builder: (context) => MainPage()));
+                }
+              },
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              title: Text(
+                "Home",
+                style: CustomTextStyles.drawerMenuTextStyle(
+                    setPurple: pageName == PAGE.MAIN),
+                textAlign: TextAlign.left,
+              ),
             ),
-          ),
-          ListTile(
-            onTap: () {
-              if (pageName == PAGE.PROFILE) {
-                Navigator.of(context).pop();
-              } else {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushReplacement(
-                    CupertinoPageRoute(builder: (context) => ProfilePage()));
-              }
-            },
-            tileColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            title: Text(
-              "Profile",
-              style: CustomTextStyles.drawerMenuTextStyle(),
-              textAlign: TextAlign.left,
+            ListTile(
+              onTap: () {
+                if (pageName == PAGE.PROFILE) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pop();
+
+                  Navigator.of(context).push(
+                      CupertinoPageRoute(builder: (context) => ProfilePage()));
+                }
+              },
+              tileColor: pageName == PAGE.PROFILE
+                  ? CustomColors.middlePurple()
+                  : Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              title: Text(
+                "Profile",
+                style: CustomTextStyles.drawerMenuTextStyle(
+                    setPurple: pageName == PAGE.PROFILE),
+                textAlign: TextAlign.left,
+              ),
             ),
-          ),
-          ListTile(
-            tileColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            title: Text(
-              "Settings",
-              style: CustomTextStyles.drawerMenuTextStyle(),
-              textAlign: TextAlign.left,
+            ListTile(
+              tileColor: pageName == PAGE.REPORT
+                  ? CustomColors.middlePurple()
+                  : Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              title: Text(
+                "Report",
+                style: CustomTextStyles.drawerMenuTextStyle(
+                    setPurple: pageName == PAGE.REPORT),
+                textAlign: TextAlign.left,
+              ),
+              onTap: () {
+                if (pageName == PAGE.REPORT) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pop();
+
+                  Navigator.of(context).push(
+                      CupertinoPageRoute(builder: (context) => ReportPage()));
+                }
+              },
             ),
-          ),
-          ListTile(
-            tileColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            title: Text(
-              "Report",
-              style: CustomTextStyles.drawerMenuTextStyle(),
-              textAlign: TextAlign.left,
+            ListTile(
+              tileColor: Colors.white,
+              onTap: () {
+                /*Config.clearAll();
+  
+                  Navigator.of(context).pop();
+  
+                  Navigator.of(context).pushReplacement(
+  
+                      CupertinoPageRoute(builder: (context) => LoginPage()));*/
+
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          actionsAlignment: MainAxisAlignment.spaceEvenly,
+                          title: Text(
+                            'LOGOUT',
+                            style: CustomTextStyles.drawerMenuTextStyle(),
+                          ),
+                          content: Text('Do you want to log out?',
+                              style: TextStyle(
+                                  color: CustomColors.middlePurple())),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+
+                                Navigator.of(context).pop();
+
+                                Config.clearAll();
+
+                                Config.setQuickSearchLoaded(value: false);
+
+                                Navigator.of(context).pushReplacement(
+                                    CupertinoPageRoute(
+                                        builder: ((context) =>
+                                            LoginPage()))); // Close the AlertDialog
+                              },
+                              child: Text('YES'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pop(); // Close the AlertDialog
+                              },
+                              child: Text('NO'),
+                            )
+                          ],
+                        ));
+              },
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+              title: Text(
+                "Logout",
+                style: CustomTextStyles.drawerMenuTextStyle(),
+                textAlign: TextAlign.left,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
