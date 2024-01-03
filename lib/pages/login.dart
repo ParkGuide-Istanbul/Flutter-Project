@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:park_guide_istanbul/pages/mainPage.dart';
+import 'package:park_guide_istanbul/patterns/Singleton.dart';
 import 'package:park_guide_istanbul/patterns/config.dart';
 import 'package:park_guide_istanbul/patterns/httpReqs.dart';
+import 'package:park_guide_istanbul/patterns/maps.dart';
 import 'package:park_guide_istanbul/utils/customWidgets.dart';
 import 'package:park_guide_istanbul/pages/signUp.dart';
 import 'package:park_guide_istanbul/utils/ui_features.dart';
@@ -19,13 +22,24 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: scaffoldKey,
       appBar: preLoginAppBar(label: 'Login To Your Account', context: context),
-      body: SingleChildScrollView(
-          child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32.0),
-        child: LoginForm(),
-      )),
+      body: Stack(children: [
+        Container(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/ortakoy_mosq.png'),
+                  fit: BoxFit.cover,
+                  opacity: 0.4,
+                  alignment: Alignment.center)),
+        ),
+        SingleChildScrollView(
+            child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32.0),
+          child: LoginForm(),
+        )),
+      ]),
     );
   }
 }
@@ -39,11 +53,13 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   HttpRequests httpLogin = new HttpRequests(Config.getLoginURL());
-
+  HttpRequests _httpQS = HttpRequests(Config.getQuickSearchesURL());
+  MapsApi _mapsApi = MapsApi();
   final _loginKey = GlobalKey<FormState>();
   bool wrongCredentials = false;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  List<String> _quickSearches = [];
 
   void goToSignUpPage() {
     print('This is Sign Up function');
@@ -60,30 +76,58 @@ class _LoginFormState extends State<LoginForm> {
     String username = _usernameController.text;
     String password = _passwordController.text;
 
+    if (username.isEmpty || password.isEmpty) {
+      Fluttertoast.showToast(
+          msg: "Username and password have to be filled.",
+          toastLength: Toast.LENGTH_LONG,
+          backgroundColor: CustomColors.middlePurple());
+
+      return;
+    }
+
+    showDialog(
+        context: context,
+        builder: (context) => const Center(child: CircularProgressIndicator()));
     Map<String, dynamic> userCredentials = {
       "username": username,
       "password": password,
-      "requiredRoles": ["StandartUser"]
+      "requiredRoles": ["StandardUser"]
     };
 
     httpLogin.postRequest(userCredentials).then((response) {
       if (response['statusCode'] == 200) {
+        print(response);
         wrongCredentials = false;
         String userToken = response['message']['token'];
+        String name = response['message']['name'];
+        String surname = response['message']['surname'];
+        print('TOKEN: $userToken');
         Config.setUserToken(userToken);
         Config.setPassword(password: password);
         Config.setUsername(username: username);
+        Config.setName(name: name);
+        Config.setSurname(surname: surname);
         Config.setProfilePicture(
             profilePictureURL: "assets/useravatarazkucuk.png");
-        //go to home page
+        //Main page context obtain protocol:
+        Navigator.of(context).pop();
         Navigator.of(context).pushReplacement(
             CupertinoPageRoute(builder: (context) => MainPage()));
+
+        //go to home page
+
       } else if (response['statusCode'] == 500) {
+        Navigator.of(context).pop();
         print('Server is off.');
       } else {
+        Navigator.of(context).pop();
         wrongCredentials = true;
         _loginKey.currentState!.validate();
         wrongCredentials = false;
+        Fluttertoast.showToast(
+            msg: response['message'],
+            toastLength: Toast.LENGTH_LONG,
+            backgroundColor: CustomColors.middlePurple());
       }
     });
 
@@ -101,31 +145,37 @@ class _LoginFormState extends State<LoginForm> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            TextFormField(
-              validator: (value) => wrongCredentials
-                  ? "Username and password do not match!"
-                  : null,
-              controller: _usernameController,
-              decoration: const InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16))),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextFormField(
+                validator: (value) => wrongCredentials
+                    ? "Username and password do not match!"
+                    : null,
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(16))),
+                ),
+                keyboardType: TextInputType.emailAddress,
               ),
-              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16.0),
-            TextFormField(
-              validator: (value) => wrongCredentials
-                  ? "Username and password do not match!"
-                  : null,
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextFormField(
+                validator: (value) => wrongCredentials
+                    ? "Username and password do not match!"
+                    : null,
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
                 ),
+                obscureText: true,
               ),
-              obscureText: true,
             ),
             const SizedBox(height: 24.0),
             Container(
