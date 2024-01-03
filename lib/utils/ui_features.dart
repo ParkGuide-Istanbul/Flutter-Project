@@ -9,8 +9,25 @@ class CustomColors {
 }
 
 class CustomTextStyles {
-  static TextStyle drawerMenuTextStyle() => TextStyle(
-        color: CustomColors.middlePurple(),
+  static TextStyle drawerMenuTextStyle({bool? setPurple}) => setPurple == null
+      ? TextStyle(
+          color: CustomColors.middlePurple(),
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        )
+      : setPurple == true
+          ? TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            )
+          : TextStyle(
+              color: CustomColors.middlePurple(),
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            );
+  static labelTextStyle() => TextStyle(
+        color: CustomColors.darkPurple(),
         fontWeight: FontWeight.bold,
         fontSize: 20,
       );
