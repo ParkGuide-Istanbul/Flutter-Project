@@ -1,5 +1,40 @@
 import 'package:park_guide_istanbul/patterns/objects.dart';
 
+class BackgroundSingleton {
+  static BackgroundSingleton? _singleton;
+  BackgroundSingleton._();
+
+  static BackgroundSingleton getInstance() {
+    _singleton ??= BackgroundSingleton._();
+    return _singleton!;
+  }
+
+  Isolate? backgroundIsolate;
+  Timer? backgroundTimer;
+  ReceivePort? _receivePort;
+
+  ReceivePort getReceivePort() => _receivePort!;
+
+  void setReceivePort(ReceivePort receivePort) {
+    _receivePort = receivePort;
+  }
+
+  void setBackgroundIsolate(Isolate isolate) {
+    backgroundIsolate = isolate;
+  }
+
+  void setBackgroundTimer(Timer timer) {
+    backgroundTimer = timer;
+  }
+
+  Isolate getBackgroundIsolate() => backgroundIsolate!;
+  Timer getBackgroundTimer() => backgroundTimer!;
+}
+
+
+
+
+
 class EmailSingleton {
   static EmailSingleton? _singleton;
 
